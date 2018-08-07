@@ -18,124 +18,132 @@ package org.immutables.fixture.jackson;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import java.io.IOException;
+import org.junit.Assert;
 import org.junit.Test;
 import static org.immutables.check.Checkers.check;
 
 public class ObjectMappedTest {
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-  {
-    OBJECT_MAPPER.registerModule(new GuavaModule());
-  }
 
-  public static class Wrapper {
-    public ImmutableSampleJacksonMapped mapped;
-  }
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  @Test
-  public void constructorMapping() throws IOException {
-    String originalSampleJson = "{\"X\":1, \"bal\": \"V\"}";
-    ConstructorJacksonMapped mapped =
-        OBJECT_MAPPER.readValue(originalSampleJson, ConstructorJacksonMapped.class);
-    String json = OBJECT_MAPPER.writeValueAsString(mapped);
-    check(OBJECT_MAPPER.readValue(json, ConstructorJacksonMapped.class)).is(mapped);
-  }
+    {
+        OBJECT_MAPPER.registerModule(new GuavaModule());
+    }
 
-  @Test
-  public void topUnmarshalMinimumAnnotations() throws IOException {
-    ImmutableMinimumAnnotationsMapped mapped = ImmutableMinimumAnnotationsMapped.builder().a("a").addB(1, 2).build();
-    String json = OBJECT_MAPPER.writeValueAsString(mapped);
-    check(OBJECT_MAPPER.readValue(json, ImmutableMinimumAnnotationsMapped.class)).is(mapped);
-  }
+    {
+        OBJECT_MAPPER.registerModule(new GuavaModule());
+    }
 
-  @Test
-  public void minimumMarshaledPropertyNames() throws IOException {
-    String originalSampleJson = "{\"A\":\"a\", \"B\": [1, 2]}";
-    ImmutableMinimumAnnotationsMapped mapped =
-        OBJECT_MAPPER.readValue(originalSampleJson, ImmutableMinimumAnnotationsMapped.class);
-    String json = OBJECT_MAPPER.writeValueAsString(mapped);
-    check(OBJECT_MAPPER.readValue(json, ImmutableMinimumAnnotationsMapped.class)).is(mapped);
-  }
+    public static class Wrapper {
 
-  @Test
-  public void minimumIgnoreUnknownNames() throws IOException {
-    String originalSampleJson = "{\"A\":\"a\", \"B\": [1, 2], \"Z\": false}";
-    ImmutableMinimumAnnotationsMapped mapped =
-        OBJECT_MAPPER.readValue(originalSampleJson, ImmutableMinimumAnnotationsMapped.class);
-    String json = OBJECT_MAPPER.writeValueAsString(mapped);
-    check(OBJECT_MAPPER.readValue(json, ImmutableMinimumAnnotationsMapped.class)).is(mapped);
-  }
+        public ImmutableSampleJacksonMapped mapped;
+    }
 
-  @Test
-  public void topLevelMarshalUnmarshal() throws IOException {
-    ImmutableSampleJacksonMapped mapped = ImmutableSampleJacksonMapped.builder().a("a").addB(1, 2).build();
-    String json = OBJECT_MAPPER.writeValueAsString(mapped);
-    check(OBJECT_MAPPER.readValue(json, ImmutableSampleJacksonMapped.class)).is(mapped);
-  }
+    @Test
+    public void constructorMapping() throws IOException {
+        String originalSampleJson = "{\"X\":1, \"bal\": \"V\"}";
+        ConstructorJacksonMapped mapped = OBJECT_MAPPER.readValue(originalSampleJson, ConstructorJacksonMapped.class);
+        String json = OBJECT_MAPPER.writeValueAsString(mapped);
+        check(OBJECT_MAPPER.readValue(json, ConstructorJacksonMapped.class)).is(mapped);
+    }
 
-  @Test
-  public void nestedMarshalUnmarshal() throws IOException {
-    Wrapper wrapper = new Wrapper();
-    wrapper.mapped = ImmutableSampleJacksonMapped.builder().a("a").addB(1, 2).build();
+    @Test
+    public void topUnmarshalMinimumAnnotations() throws IOException {
+        ImmutableMinimumAnnotationsMapped mapped = ImmutableMinimumAnnotationsMapped.builder().a("a").addB(1, 2).build();
+        String json = OBJECT_MAPPER.writeValueAsString(mapped);
+        check(OBJECT_MAPPER.readValue(json, ImmutableMinimumAnnotationsMapped.class)).is(mapped);
+    }
 
-    String json = OBJECT_MAPPER.writeValueAsString(wrapper);
-    check(OBJECT_MAPPER.readValue(json, Wrapper.class).mapped).is(wrapper.mapped);
-  }
+    @Test
+    public void minimumMarshaledPropertyNames() throws IOException {
+        String originalSampleJson = "{\"A\":\"a\", \"B\": [1, 2]}";
+        ImmutableMinimumAnnotationsMapped mapped = OBJECT_MAPPER.readValue(originalSampleJson, ImmutableMinimumAnnotationsMapped.class);
+        String json = OBJECT_MAPPER.writeValueAsString(mapped);
+        check(OBJECT_MAPPER.readValue(json, ImmutableMinimumAnnotationsMapped.class)).is(mapped);
+    }
 
-  @Test
-  public void jacksonRoundtrip() throws IOException {
-    SampleJacksonMapped.RegularPojo pojo = new SampleJacksonMapped.RegularPojo();
-    pojo.x = 1;
-    pojo.y = 2;
+    @Test
+    public void minimumIgnoreUnknownNames() throws IOException {
+        String originalSampleJson = "{\"A\":\"a\", \"B\": [1, 2], \"Z\": false}";
+        ImmutableMinimumAnnotationsMapped mapped = OBJECT_MAPPER.readValue(originalSampleJson, ImmutableMinimumAnnotationsMapped.class);
+        String json = OBJECT_MAPPER.writeValueAsString(mapped);
+        check(OBJECT_MAPPER.readValue(json, ImmutableMinimumAnnotationsMapped.class)).is(mapped);
+    }
 
-    ImmutableSampleJacksonMapped original = ImmutableSampleJacksonMapped.builder()
-        .a("a")
-        .pojo(pojo)
-        .build();
+    @Test
+    public void topLevelMarshalUnmarshal() throws IOException {
+        ImmutableSampleJacksonMapped mapped = ImmutableSampleJacksonMapped.builder().a("a").addB(1, 2).build();
+        String json = OBJECT_MAPPER.writeValueAsString(mapped);
+        check(OBJECT_MAPPER.readValue(json, ImmutableSampleJacksonMapped.class)).is(mapped);
+    }
 
-    String json = OBJECT_MAPPER.writeValueAsString(original);
-    SampleJacksonMapped value = OBJECT_MAPPER.readValue(json, SampleJacksonMapped.class);
-    check(value).is(original);
-    check(value).not().same(original);
-  }
+    @Test
+    public void nestedMarshalUnmarshal() throws IOException {
+        Wrapper wrapper = new Wrapper();
+        wrapper.mapped = ImmutableSampleJacksonMapped.builder().a("a").addB(1, 2).build();
+        String json = OBJECT_MAPPER.writeValueAsString(wrapper);
+        check(OBJECT_MAPPER.readValue(json, Wrapper.class).mapped).is(wrapper.mapped);
+    }
 
-  @Test
-  public void abstractUnmarshalByAnnotation() throws IOException {
-    ImmutableSampleJacksonMapped original = ImmutableSampleJacksonMapped.builder().a("a").build();
-    String json = OBJECT_MAPPER.writeValueAsString(original);
-    SampleJacksonMapped value = OBJECT_MAPPER.readValue(json, SampleJacksonMapped.class);
-    check(value).is(original);
-    check(value).not().same(original);
-  }
+    @Test
+    public void jacksonRoundtrip() throws IOException {
+        SampleJacksonMapped.RegularPojo pojo = new SampleJacksonMapped.RegularPojo();
+        pojo.x = 1;
+        pojo.y = 2;
+        ImmutableSampleJacksonMapped original = ImmutableSampleJacksonMapped.builder().a("a").pojo(pojo).build();
+        String json = OBJECT_MAPPER.writeValueAsString(original);
+        SampleJacksonMapped value = OBJECT_MAPPER.readValue(json, SampleJacksonMapped.class);
+        check(value).is(original);
+        check(value).not().same(original);
+    }
 
-  @Test
-  public void includeNonEmpty() throws Exception {
-    String json = "{}";
-    OptionIncludeNonEmpty value = OBJECT_MAPPER.readValue(json, OptionIncludeNonEmpty.class);
-    check(OBJECT_MAPPER.writeValueAsString(value)).is(json);
-  }
+    @Test
+    public void abstractUnmarshalByAnnotation() throws IOException {
+        ImmutableSampleJacksonMapped original = ImmutableSampleJacksonMapped.builder().a("a").build();
+        String json = OBJECT_MAPPER.writeValueAsString(original);
+        SampleJacksonMapped value = OBJECT_MAPPER.readValue(json, SampleJacksonMapped.class);
+        check(value).is(original);
+        check(value).not().same(original);
+    }
 
-  @Test
-  public void propertyOrder() throws Exception {
-    String json = "[0.1,1.2,2.3]";
-    GeoPoint value = OBJECT_MAPPER.readValue(json, GeoPoint.class);
-    check(OBJECT_MAPPER.writeValueAsString(value)).is(json);
-  }
+    @Test
+    public void includeNonEmpty() throws Exception {
+        String json = "{}";
+        OptionIncludeNonEmpty value = OBJECT_MAPPER.readValue(json, OptionIncludeNonEmpty.class);
+        check(OBJECT_MAPPER.writeValueAsString(value)).is(json);
+    }
 
-  @Test
-  public void anyGetterSetter() throws Exception {
-    String json = "{\"A\":1,\"B\":true}";
-    AnyGetterSetter value = OBJECT_MAPPER.readValue(json, AnyGetterSetter.class);
-    check(OBJECT_MAPPER.writeValueAsString(value)).is(json);
-  }
+    @Test
+    public void propertyOrder() throws Exception {
+        String json = "[0.1,1.2,2.3]";
+        GeoPoint value = OBJECT_MAPPER.readValue(json, GeoPoint.class);
+        check(OBJECT_MAPPER.writeValueAsString(value)).is(json);
+    }
 
-  @Test
-  public void lazyAttribute() throws Exception {
-    String json = "{\"a\":1}";
-    LazyAttributesSafe value = OBJECT_MAPPER.readValue(json, LazyAttributesSafe.class);
-    check(value.getA()).is(1);
-    System.out.println(value);
+    @Test
+    public void anyGetterSetter() throws Exception {
+        String json = "{\"A\":1,\"B\":true}";
+        AnyGetterSetter value = OBJECT_MAPPER.readValue(json, AnyGetterSetter.class);
+        check(OBJECT_MAPPER.writeValueAsString(value)).is(json);
+    }
+
+    @Test
+    public void lazyAttribute() throws Exception {
+        String json = "{\"a\":1}";
+        LazyAttributesSafe value = OBJECT_MAPPER.readValue(json, LazyAttributesSafe.class);
+        check(value.getA()).is(1);
+        System.out.println(value);
     // check(OBJECT_MAPPER.writeValueAsString(value)).is(json);
-  }
+    }
+
+    @Test
+    public void noAnnotationsWorks() throws Exception {
+        Assert.assertTrue(ImmutableJacksonMappedWithNoAnnotations.Json.class.getAnnotation(JsonDeserialize.class) == null);
+        String json = "{\"someString\":\"xxx\"}";
+        ImmutableJacksonMappedWithNoAnnotations value = OBJECT_MAPPER.readValue(json, ImmutableJacksonMappedWithNoAnnotations.class);
+        check(OBJECT_MAPPER.writeValueAsString(value)).is(json);
+    }
 }
